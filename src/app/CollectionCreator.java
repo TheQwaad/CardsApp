@@ -1,6 +1,7 @@
 package app;
 
 import collection.CollectionsIO;
+import collection.OneWayCollection;
 import gui.PlaceholderTextField;
 
 import javax.imageio.ImageIO;
@@ -73,7 +74,7 @@ class CreateCollectionButtonListener implements ActionListener {
         String[] files = new String[frame.getFiles().size()];
         frame.getFiles().toArray(files);
         try {
-            CollectionsIO.saveCollection(frame.getEntryText(), files);
+            CollectionsIO.saveOneWayCollection(new OneWayCollection(frame.getEntryText(), files));
             frame.updateMainWindow();
             frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
         } catch (IOException ex) {

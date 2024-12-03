@@ -2,12 +2,15 @@ package app;
 
 import collection.*;
 import helpers.ImageEditor;
+import helpers.Pair;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Map;
 
 
 class CreateButtonListener implements ActionListener {
@@ -30,13 +33,13 @@ class GenerateButtonListener implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent e) {
-        mainWindow.setCollection(CollectionsIO.loadCollection(mainWindow.getSelectedCollection()));
         try {
-            mainWindow.updateImage();
+            mainWindow.setCollection(CollectionsIO.loadOneWayCollection(mainWindow.getSelectedCollection()));
+            mainWindow.updateOneWayImage();
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(
                     mainWindow,
-                    "Не удалось сгенерировать картинку. Попробуйте выбрать другую коллекцию",
+                    "Не удалось сгенерировать картинку. Попробуйте выбрать другую коллекцию Возможно, коллекция не была выбрана",
                     "Ошибка", JOptionPane.ERROR_MESSAGE
             );
         }
@@ -44,11 +47,15 @@ class GenerateButtonListener implements ActionListener {
 }
 
 public class MainWindow extends JFrame {
+    Map<String, String> collectionTypes = Map.of(
+            "one-way", "О/С",
+            "two-way", "Д/С"
+    );
     JButton generateButton;
     JButton createButton;
     JComboBox<String> collectionsComboBox;
-    Collection collection;
-    String[] collections;
+    AbstractCollection collection;
+    Pair<String, String>[] collections;
     JPanel imagePanel;
     JPanel selectPanel;
     JPanel generatePanel;
@@ -56,10 +63,11 @@ public class MainWindow extends JFrame {
 
 
     public void updateCollectionsList() {
-        collections = CollectionsIO.loadCollections();
+        collections = CollectionsIO.loadCollectionsList();
         collectionsComboBox.removeAllItems();
-        for (String collection : collections) {
-            collectionsComboBox.addItem(collection);
+        for (Pair<String, String> collection : collections) {
+            String item = String.format("%s | %s", collection.first(), collectionTypes.get(collection.second()));
+            collectionsComboBox.addItem(item);
         }
         collectionsComboBox.revalidate();
         collectionsComboBox.repaint();
@@ -67,18 +75,19 @@ public class MainWindow extends JFrame {
         selectPanel.repaint();
     }
 
-    public void setCollection(Collection collection) {
+    public void setCollection(AbstractCollection collection) {
         this.collection = collection;
     }
 
     public String getSelectedCollection() {
-        return (String) collectionsComboBox.getSelectedItem();
+        return ((String) collectionsComboBox.getSelectedItem()).split("\\|")[0].strip();
     }
 
-    public void updateImage() throws IOException {
+    public void updateOneWayImage() throws IOException {
         imagePanel.removeAll();
         JPanel center = new JPanel( new GridBagLayout() );
-        JLabel picLabel = new JLabel(new ImageIcon(ImageEditor.rescale(collection.getImage(), 1000, 900)));
+        BufferedImage image = (BufferedImage) collection.getItem().getContent();
+        JLabel picLabel = new JLabel(new ImageIcon(ImageEditor.rescale(image, 1000, 900)));
         center.add(picLabel, new GridBagConstraints());
         imagePanel.setLayout(new GridBagLayout());
         imagePanel.add(center);
@@ -92,13 +101,11 @@ public class MainWindow extends JFrame {
         this.setResizable(true);
         this.setUndecorated(false);
 
-        String[] collections = CollectionsIO.loadCollections();
-
         generatePanel = new JPanel();
 
         generateButton = new JButton("Сгенерировать карточку");
         createButton = new JButton("Создать Коллекцию");
-        collectionsComboBox = new JComboBox<>(collections);
+        collectionsComboBox = new JComboBox<>();
 
         generateButton.setSize(100, 100);
 
@@ -121,6 +128,8 @@ public class MainWindow extends JFrame {
         buttonsSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, selectPanel, generatePanel);
         contentPane.add(BorderLayout.NORTH, buttonsSplitPane);
         contentPane.add(BorderLayout.CENTER, imagePanel);
+
+        updateCollectionsList();
 
         this.setPreferredSize(new Dimension(1000, 1100));
         this.setMinimumSize(new Dimension(1000, 1100));

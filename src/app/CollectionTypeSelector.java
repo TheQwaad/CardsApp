@@ -25,26 +25,26 @@ class SingleCollectionButtonListener implements ActionListener {
 
 
 public class CollectionTypeSelector extends JFrame {
-    JButton singleCollectionButton;
-    JButton doubleCollectionButton;
+    JButton oneWayButton;
+    JButton doubleWayButton;
     JPanel buttonsPanel;
     MainWindow mainWindow;
     public CollectionTypeSelector(MainWindow mainWindow) {
         super("Выберите тип коллекции");
         this.mainWindow = mainWindow;
 
-        singleCollectionButton = new JButton("Односторонние карточки");
-        singleCollectionButton.addActionListener(new SingleCollectionButtonListener(mainWindow, this));
+        oneWayButton = new JButton("Односторонние карточки");
+        oneWayButton.addActionListener(new SingleCollectionButtonListener(mainWindow, this));
 
-        doubleCollectionButton = new JButton("Двусторонние карточки");
+        doubleWayButton = new JButton("Двусторонние карточки");
 
 
-        singleCollectionButton.setPreferredSize(new Dimension(200, 30));
-        doubleCollectionButton.setPreferredSize(new Dimension(200, 30));
+        oneWayButton.setPreferredSize(new Dimension(200, 30));
+        doubleWayButton.setPreferredSize(new Dimension(200, 30));
 
         buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        buttonsPanel.add(singleCollectionButton);
-        buttonsPanel.add(doubleCollectionButton);
+        buttonsPanel.add(oneWayButton);
+        buttonsPanel.add(doubleWayButton);
 
         this.setSize(300, 200);
         this.getContentPane().add(buttonsPanel, BorderLayout.CENTER);
