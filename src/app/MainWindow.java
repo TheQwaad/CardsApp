@@ -52,6 +52,7 @@ public class MainWindow extends JFrame {
     JPanel imagePanel;
     JPanel selectPanel;
     JPanel generatePanel;
+    JSplitPane buttonsSplitPane;
 
 
     public void updateCollectionsList() {
@@ -76,8 +77,11 @@ public class MainWindow extends JFrame {
 
     public void updateImage() throws IOException {
         imagePanel.removeAll();
-        JLabel picLabel = new JLabel(new ImageIcon(ImageEditor.rescaleToHeight(collection.getImage(), 900)));
-        imagePanel.add(picLabel);
+        JPanel center = new JPanel( new GridBagLayout() );
+        JLabel picLabel = new JLabel(new ImageIcon(ImageEditor.rescale(collection.getImage(), 1000, 900)));
+        center.add(picLabel, new GridBagConstraints());
+        imagePanel.setLayout(new GridBagLayout());
+        imagePanel.add(center);
         imagePanel.revalidate();
         imagePanel.repaint();
     }
@@ -85,12 +89,12 @@ public class MainWindow extends JFrame {
     public MainWindow() {
         super("Генератор карточек");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setResizable(false);
+        this.setResizable(true);
+        this.setUndecorated(false);
 
         String[] collections = CollectionsIO.loadCollections();
 
         generatePanel = new JPanel();
-
 
         generateButton = new JButton("Сгенерировать карточку");
         createButton = new JButton("Создать Коллекцию");
@@ -109,14 +113,31 @@ public class MainWindow extends JFrame {
         generateButton.addActionListener(new GenerateButtonListener(this));
 
         imagePanel = new JPanel();
+        imagePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 
         Container contentPane = getContentPane();
-        contentPane.add(BorderLayout.NORTH, generatePanel);
-        contentPane.add(BorderLayout.CENTER, selectPanel);
-        contentPane.add(BorderLayout.SOUTH, imagePanel);
+        contentPane.setLayout(new BorderLayout());
 
-        this.setSize(1000, 1100);
+        buttonsSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, selectPanel, generatePanel);
+        contentPane.add(BorderLayout.NORTH, buttonsSplitPane);
+        contentPane.add(BorderLayout.CENTER, imagePanel);
+
+        this.setPreferredSize(new Dimension(1000, 1100));
+        this.setMinimumSize(new Dimension(1000, 1100));
+        this.setMaximumSize(new Dimension(1920, 1080));
+
+        this.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                setLocationRelativeTo(null);
+            }
+        });
+
+        this.pack();
         this.setLocationRelativeTo(null);
         this.setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        new MainWindow();
     }
 }
