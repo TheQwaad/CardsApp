@@ -85,11 +85,7 @@ public class MainWindow extends JFrame {
         return ((String) collectionsComboBox.getSelectedItem()).split("\\|")[0].strip();
     }
 
-    private void updateImage(BufferedImage image) {
-
-    }
-
-    public void updateOneWayImage() throws IOException {
+    public void updateImage(String path) {
         imagePanel.removeAll();
 
         JPanel loadingPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -107,7 +103,7 @@ public class MainWindow extends JFrame {
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() throws Exception {
-                BufferedImage image = (BufferedImage) collection.getItem().getContent();
+                BufferedImage image = ImageEditor.loadImage(path);
                 imagePanel.removeAll();
 
                 JLabel picLabel = new JLabel(new ImageIcon(ImageEditor.rescale(image, 1000, 800)));
@@ -127,6 +123,11 @@ public class MainWindow extends JFrame {
         };
 
         worker.execute();
+    }
+
+    public void updateOneWayImage() throws IOException {
+        String path = (String) collection.getItem().getContent();
+        updateImage(path);
     }
 
 

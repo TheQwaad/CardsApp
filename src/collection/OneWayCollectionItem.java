@@ -15,7 +15,7 @@ public class OneWayCollectionItem implements CollectionItem {
     }
 
     public Object getContent() throws IOException {
-        return ImageIO.read(new File(filePath));
+        return filePath;
     }
 
     @Override

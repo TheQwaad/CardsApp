@@ -18,10 +18,7 @@ public class TwoWayCollectionItem implements CollectionItem {
 
     @Override
     public Object getContent() throws IOException {
-        return new Pair<>(
-                ImageIO.read(new File(frontPath)),
-                ImageIO.read(new File(backPath))
-        );
+        return new Pair<>(frontPath, backPath);
     }
 
     @Override
