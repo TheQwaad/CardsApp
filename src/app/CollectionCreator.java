@@ -95,7 +95,7 @@ public class CollectionCreator extends javax.swing.JFrame {
     private final JButton createCollectionButton;
     private final JPanel filesCountPanel;
     CollectionCreator(MainWindow mainWindow) {
-        super("Collection Creator");
+        super("Создание коллекции");
 
         this.files = new ArrayList<>();
         this.mainWindow = mainWindow;
@@ -135,6 +135,7 @@ public class CollectionCreator extends javax.swing.JFrame {
         this.setSize(300, 400);
         this.setLocationRelativeTo(null);
         this.setVisible(true);
+        this.setResizable(false);
     }
 
     public void addFile(String path) {

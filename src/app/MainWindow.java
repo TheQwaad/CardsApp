@@ -18,7 +18,7 @@ class CreateButtonListener implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent e) {
-        CollectionCreator collectionCreator = new CollectionCreator(mainWindow);
+        CollectionTypeSelector collectionTypeSelector = new CollectionTypeSelector(mainWindow);
     }
 }
 
