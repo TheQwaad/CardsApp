@@ -4,11 +4,13 @@ import collection.*;
 import helpers.ImageEditor;
 import helpers.Pair;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -83,20 +85,54 @@ public class MainWindow extends JFrame {
         return ((String) collectionsComboBox.getSelectedItem()).split("\\|")[0].strip();
     }
 
-    public void updateOneWayImage() throws IOException {
-        imagePanel.removeAll();
-        JPanel center = new JPanel( new GridBagLayout() );
-        BufferedImage image = (BufferedImage) collection.getItem().getContent();
-        JLabel picLabel = new JLabel(new ImageIcon(ImageEditor.rescale(image, 1000, 900)));
-        center.add(picLabel, new GridBagConstraints());
-        imagePanel.setLayout(new GridBagLayout());
-        imagePanel.add(center);
-        imagePanel.revalidate();
-        imagePanel.repaint();
+    private void updateImage(BufferedImage image) {
+
     }
 
-    public MainWindow() {
+    public void updateOneWayImage() throws IOException {
+        imagePanel.removeAll();
+
+        JPanel loadingPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JLabel loadingLabel = new JLabel("Карточка загружается...");
+        loadingPanel.add(loadingLabel);
+
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
+        loadingPanel.add(progressBar);
+
+        imagePanel.add(loadingPanel);
+        imagePanel.revalidate();
+        imagePanel.repaint();
+
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                BufferedImage image = (BufferedImage) collection.getItem().getContent();
+                imagePanel.removeAll();
+
+                JLabel picLabel = new JLabel(new ImageIcon(ImageEditor.rescale(image, 1000, 800)));
+                JPanel center = new JPanel(new GridBagLayout());
+                center.add(picLabel, new GridBagConstraints());
+
+                imagePanel.setLayout(new GridBagLayout());
+                imagePanel.add(center);
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                imagePanel.revalidate();
+                imagePanel.repaint();
+            }
+        };
+
+        worker.execute();
+    }
+
+
+    public MainWindow() throws IOException {
         super("Генератор карточек");
+        setIconImage(ImageIO.read(new File("assets/icon.jpg")));
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(true);
         this.setUndecorated(false);
@@ -121,6 +157,7 @@ public class MainWindow extends JFrame {
 
         imagePanel = new JPanel();
         imagePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        imagePanel.add(new JLabel("Здесь будет ваша картинка"));
 
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
@@ -131,8 +168,8 @@ public class MainWindow extends JFrame {
 
         updateCollectionsList();
 
-        this.setPreferredSize(new Dimension(1000, 1100));
-        this.setMinimumSize(new Dimension(1000, 1100));
+        this.setPreferredSize(new Dimension(900, 1100));
+        this.setMinimumSize(new Dimension(900, 1100));
         this.setMaximumSize(new Dimension(1920, 1080));
 
         this.addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -144,9 +181,5 @@ public class MainWindow extends JFrame {
         this.pack();
         this.setLocationRelativeTo(null);
         this.setVisible(true);
-    }
-
-    public static void main(String[] args) {
-        new MainWindow();
     }
 }
