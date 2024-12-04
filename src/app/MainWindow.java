@@ -1,7 +1,7 @@
 package app;
 
 import collection.*;
-import helpers.ImageEditor;
+import helpers.ImageHelper;
 import helpers.Pair;
 
 import javax.imageio.ImageIO;
@@ -64,7 +64,7 @@ public class MainWindow extends JFrame {
     JSplitPane buttonsSplitPane;
 
 
-    public void updateCollectionsList() {
+    public void updateCollectionsList() throws IOException {
         collections = CollectionsIO.loadCollectionsList();
         collectionsComboBox.removeAllItems();
         for (Pair<String, String> collection : collections) {
@@ -103,10 +103,10 @@ public class MainWindow extends JFrame {
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() throws Exception {
-                BufferedImage image = ImageEditor.loadImage(path);
+                BufferedImage image = ImageHelper.loadImage(path);
                 imagePanel.removeAll();
 
-                JLabel picLabel = new JLabel(new ImageIcon(ImageEditor.rescale(image, 1000, 800)));
+                JLabel picLabel = new JLabel(new ImageIcon(ImageHelper.rescale(image, 1000, 800)));
                 JPanel center = new JPanel(new GridBagLayout());
                 center.add(picLabel, new GridBagConstraints());
 

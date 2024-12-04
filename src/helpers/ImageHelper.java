@@ -6,7 +6,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class ImageEditor {
+public class ImageHelper {
     public static Image rescale(BufferedImage image, int targetWidth, int targetHeight) {
         double coefficient = (double) image.getHeight() / (double) targetHeight;
         int width = (int) ((double) image.getWidth() / coefficient);

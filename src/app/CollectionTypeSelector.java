@@ -18,7 +18,7 @@ class SingleCollectionButtonListener implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        CollectionCreator collectionCreator = new CollectionCreator(mainWindow);
+        OneWayCollectionCreator oneWayCollectionCreator = new OneWayCollectionCreator(mainWindow);
         collectionTypeSelector.dispatchEvent(new WindowEvent(collectionTypeSelector, WindowEvent.WINDOW_CLOSING));
     }
 }
