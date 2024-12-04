@@ -87,11 +87,8 @@ class OneWayCreateCollectionButtonListener implements ActionListener {
 }
 
 public class OneWayCollectionCreator extends AbstractCollectionCreator {
-    private final List<String> files;
     OneWayCollectionCreator(MainWindow mainWindow) {
         super(mainWindow);
-
-        this.files = new ArrayList<>();
 
         createCollectionButton.addActionListener(new OneWayCreateCollectionButtonListener(this));
         selectFilesButton.addActionListener(new OneWaySelectButtonListener(this));

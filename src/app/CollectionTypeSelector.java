@@ -6,11 +6,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 
-class SingleCollectionButtonListener implements ActionListener {
+class OneWayCollectionButtonListener implements ActionListener {
     MainWindow mainWindow;
     CollectionTypeSelector collectionTypeSelector;
 
-    SingleCollectionButtonListener(MainWindow mainWindow, CollectionTypeSelector collectionTypeSelector) {
+    OneWayCollectionButtonListener(MainWindow mainWindow, CollectionTypeSelector collectionTypeSelector) {
         super();
         this.mainWindow = mainWindow;
         this.collectionTypeSelector = collectionTypeSelector;
@@ -23,10 +23,26 @@ class SingleCollectionButtonListener implements ActionListener {
     }
 }
 
+class TwoWayCollectionButtonListener implements ActionListener {
+    MainWindow mainWindow;
+    CollectionTypeSelector collectionTypeSelector;
+    TwoWayCollectionButtonListener(MainWindow mainWindow, CollectionTypeSelector collectionTypeSelector) {
+        super();
+        this.mainWindow = mainWindow;
+        this.collectionTypeSelector = collectionTypeSelector;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        TwoWayCollectionCreator twoWayCollectionCreator = new TwoWayCollectionCreator(mainWindow);
+        collectionTypeSelector.dispatchEvent(new WindowEvent(collectionTypeSelector, WindowEvent.WINDOW_CLOSING));
+    }
+}
+
 
 public class CollectionTypeSelector extends JFrame {
     JButton oneWayButton;
-    JButton doubleWayButton;
+    JButton twoWayButton;
     JPanel buttonsPanel;
     MainWindow mainWindow;
     public CollectionTypeSelector(MainWindow mainWindow) {
@@ -34,17 +50,18 @@ public class CollectionTypeSelector extends JFrame {
         this.mainWindow = mainWindow;
 
         oneWayButton = new JButton("Односторонние карточки");
-        oneWayButton.addActionListener(new SingleCollectionButtonListener(mainWindow, this));
+        twoWayButton = new JButton("Двусторонние карточки");
 
-        doubleWayButton = new JButton("Двусторонние карточки");
+        oneWayButton.addActionListener(new OneWayCollectionButtonListener(mainWindow, this));
+        twoWayButton.addActionListener(new TwoWayCollectionButtonListener(mainWindow, this));
 
 
         oneWayButton.setPreferredSize(new Dimension(200, 30));
-        doubleWayButton.setPreferredSize(new Dimension(200, 30));
+        twoWayButton.setPreferredSize(new Dimension(200, 30));
 
         buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonsPanel.add(oneWayButton);
-        buttonsPanel.add(doubleWayButton);
+        buttonsPanel.add(twoWayButton);
 
         this.setSize(300, 200);
         this.getContentPane().add(buttonsPanel, BorderLayout.CENTER);

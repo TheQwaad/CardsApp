@@ -2,10 +2,17 @@ package app;
 
 import gui.PlaceholderTextField;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public abstract class AbstractCollectionCreator extends javax.swing.JFrame {
@@ -50,6 +57,7 @@ public abstract class AbstractCollectionCreator extends javax.swing.JFrame {
         contentPane.add(BorderLayout.CENTER, buttonsPanel);
         contentPane.add(BorderLayout.SOUTH, filesCountPanel);
 
+
         this.setSize(300, 400);
         this.setLocationRelativeTo(null);
         this.setVisible(true);
@@ -58,6 +66,10 @@ public abstract class AbstractCollectionCreator extends javax.swing.JFrame {
 
     public String getEntryText() {
         return nameEntry.getText();
+    }
+
+    public void addFile(String path) {
+        files.add(path);
     }
 
     public void updateMainWindow() throws IOException {

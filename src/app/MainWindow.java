@@ -7,12 +7,13 @@ import helpers.Pair;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
+
 
 
 class CreateButtonListener implements ActionListener {
@@ -36,8 +37,12 @@ class GenerateButtonListener implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         try {
-            mainWindow.setCollection(CollectionsIO.loadOneWayCollection(mainWindow.getSelectedCollection()));
-            mainWindow.updateOneWayImage();
+            if (mainWindow.getSelectedCollectionType() == CollectionTypes.ONE_WAY) {
+                mainWindow.setCollection(CollectionsIO.loadOneWayCollection(mainWindow.getSelectedCollection()));
+            } else {
+                mainWindow.setCollection(CollectionsIO.loadTwoWayCollection(mainWindow.getSelectedCollection()));
+            }
+            mainWindow.regenerateImage();
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(
                     mainWindow,
@@ -49,26 +54,33 @@ class GenerateButtonListener implements ActionListener {
 }
 
 public class MainWindow extends JFrame {
-    Map<String, String> collectionTypes = Map.of(
-            "one-way", "О/С",
-            "two-way", "Д/С"
+    Map<String, String> collectionTypesSynonyms = Map.of(
+            "one-way", "одност.",
+            "two-way", "двухст. "
     );
+
+    Map<String, CollectionTypes> collectionTypes = Map.of(
+            "одност.", CollectionTypes.ONE_WAY,
+            "двухст.", CollectionTypes.TWO_WAY
+    );
+
     JButton generateButton;
     JButton createButton;
     JComboBox<String> collectionsComboBox;
-    AbstractCollection collection;
+    Collection collection;
     Pair<String, String>[] collections;
     JPanel imagePanel;
     JPanel selectPanel;
     JPanel generatePanel;
     JSplitPane buttonsSplitPane;
+    MouseListener mouseListener;
 
 
     public void updateCollectionsList() throws IOException {
         collections = CollectionsIO.loadCollectionsList();
         collectionsComboBox.removeAllItems();
         for (Pair<String, String> collection : collections) {
-            String item = String.format("%s | %s", collection.first(), collectionTypes.get(collection.second()));
+            String item = String.format("%s | %s", collection.first(), collectionTypesSynonyms.get(collection.second()));
             collectionsComboBox.addItem(item);
         }
         collectionsComboBox.revalidate();
@@ -77,7 +89,7 @@ public class MainWindow extends JFrame {
         selectPanel.repaint();
     }
 
-    public void setCollection(AbstractCollection collection) {
+    public void setCollection(Collection collection) {
         this.collection = collection;
     }
 
@@ -85,7 +97,12 @@ public class MainWindow extends JFrame {
         return ((String) collectionsComboBox.getSelectedItem()).split("\\|")[0].strip();
     }
 
-    public void updateImage(String path) {
+    public CollectionTypes getSelectedCollectionType() {
+        String name = ((String) collectionsComboBox.getSelectedItem()).split("\\|")[1].substring(1);
+        return collectionTypes.get(name);
+    }
+
+    public void redrawImage(String path) {
         imagePanel.removeAll();
 
         JPanel loadingPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -125,9 +142,34 @@ public class MainWindow extends JFrame {
         worker.execute();
     }
 
-    public void updateOneWayImage() throws IOException {
-        String path = (String) collection.getItem().getContent();
-        updateImage(path);
+    public void regenerateImage() throws IOException {
+        Object content = collection.getItem().getContent();
+        if (collection instanceof OneWayCollection) {
+            String path = (String) content;
+            redrawImage(path);
+            if (mouseListener != null) {
+                imagePanel.removeMouseListener(mouseListener);
+                mouseListener = null;
+            }
+        } else {
+            mouseListener = new MouseAdapter() {
+                Pair<String, String> paths = (Pair<String, String>) content;
+                String currentPath = paths.first();
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    System.out.println("Mouse clicked!");
+                    if (Objects.equals(currentPath, paths.first())) {
+                        currentPath = paths.second();
+                    } else {
+                        currentPath = paths.first();
+                    }
+                    redrawImage(currentPath);
+                }
+            };
+
+            redrawImage(((Pair<String, String>) content).first());
+            imagePanel.addMouseListener(mouseListener);
+        }
     }
 
 
@@ -138,11 +180,13 @@ public class MainWindow extends JFrame {
         this.setResizable(true);
         this.setUndecorated(false);
 
+        mouseListener = null;
         generatePanel = new JPanel();
 
         generateButton = new JButton("Сгенерировать карточку");
         createButton = new JButton("Создать Коллекцию");
         collectionsComboBox = new JComboBox<>();
+        collectionsComboBox.setPreferredSize(new Dimension(200, 25));
 
         generateButton.setSize(100, 100);
 

@@ -54,7 +54,7 @@ public class CollectionsIO {
         jsonObject.put("name", collection.getName());
         jsonObject.put("paths", collection.getJSONPaths());
 
-        JSONHelper.writeJSONData("%s_collection", jsonObject);
+        JSONHelper.writeJSONData(String.format("%s_collection", collection.getName()), jsonObject);
     }
 
     public static void saveOneWayCollection(Collection collection) throws IOException {
@@ -80,5 +80,16 @@ public class CollectionsIO {
             imagePaths[i] = curPath.getString(0);
         }
         return new OneWayCollection(name, imagePaths);
+    }
+
+    public static TwoWayCollection loadTwoWayCollection(String name) throws IOException {
+        JSONObject jsonObject = JSONHelper.getJSONData(String.format("%s_collection", name));
+        JSONArray jsonArray = jsonObject.getJSONArray("paths");
+        Pair<String, String>[] imagePaths = new Pair[jsonArray.length()];
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONArray curPath = jsonArray.getJSONArray(i);
+            imagePaths[i] = new Pair<>(curPath.getString(0), curPath.getString(1));
+        }
+        return new TwoWayCollection(name, imagePaths);
     }
 }

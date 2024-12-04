@@ -1,7 +1,6 @@
 package app;
 
 import collection.CollectionsIO;
-import collection.OneWayCollection;
 import collection.TwoWayCollection;
 import helpers.Pair;
 
@@ -14,14 +13,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
-class TwoWaySelectButtonListener implements ActionListener {
+class SelectButtonListener implements ActionListener {
     final FileFilter imageFilter = new FileNameExtensionFilter("Картинки", ImageIO.getReaderFileSuffixes());
 
     TwoWayCollectionCreator frame;
-    TwoWaySelectButtonListener(TwoWayCollectionCreator frame) {
+    SelectButtonListener(TwoWayCollectionCreator frame) {
         this.frame = frame;
     }
     public void actionPerformed(ActionEvent e) {
@@ -102,19 +100,13 @@ class TwoWayCreateButtonListener implements ActionListener {
 }
 
 public class TwoWayCollectionCreator extends AbstractCollectionCreator {
-    private final List<String> files;
     TwoWayCollectionCreator(MainWindow mainWindow) {
         super(mainWindow);
 
-        files = new ArrayList<>();
-
         createCollectionButton.addActionListener(new TwoWayCreateButtonListener(this));
-        selectFilesButton.addActionListener(new TwoWaySelectButtonListener(this));
+        selectFilesButton.addActionListener(new SelectButtonListener(this));
     }
 
-    public void addFile(String path) {
-        files.add(path);
-    }
 
     public List<String> getFiles() {
         return files;
