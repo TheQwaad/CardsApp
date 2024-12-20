@@ -1,5 +1,7 @@
 package collection;
 
+import helpers.JSONHelper;
+import helpers.Pair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -7,108 +9,87 @@ import org.json.JSONObject;
 import java.io.*;
 
 public class CollectionsIO {
-    public static void saveCollections(String[] collection) {
+    public static void saveCollectionsList(Pair<String, String>[] collections) throws IOException {
         JSONArray jsonArray = new JSONArray();
-        for (String s : collection) {
-            jsonArray.put(s);
+        for (Pair<String, String> s : collections) {
+            JSONArray tempJsonArray = new JSONArray();
+            tempJsonArray.put(s.first());
+            tempJsonArray.put(s.second());
+            jsonArray.put(tempJsonArray);
         }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("collections", jsonArray);
-        try {
-            File dir = new File("data");
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-
-            File file = new File("data/config.json");
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-            writer.write(jsonObject.toString(4));
-            writer.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        JSONHelper.writeJSONData("config", jsonObject);
     }
 
-    public static String[] loadCollections() {
+    public static Pair<String, String>[] loadCollectionsList() throws IOException {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("data/config.json"));
-            StringBuilder jsonContent = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                jsonContent.append(line);
-            }
-            reader.close();
-            JSONObject jsonObject = new JSONObject(jsonContent.toString());
+            JSONObject jsonObject = JSONHelper.getJSONData("config");
             JSONArray jsonArray = jsonObject.getJSONArray("collections");
-            String[] collections = new String[jsonArray.length()];
+            Pair<String, String>[] collections = new Pair[jsonArray.length()];
             for (int i = 0; i < jsonArray.length(); i++) {
-                collections[i] = jsonArray.getString(i);
+                JSONArray tempJsonArray = jsonArray.getJSONArray(i);
+                collections[i] = new Pair<>(tempJsonArray.getString(0), tempJsonArray.getString(1));
             }
 
             return collections;
 
         } catch (IOException | JSONException e) {
-            String[] empty = new String[0];
-            saveCollections(empty);
+            Pair<String, String>[] empty = new Pair[0];
+            saveCollectionsList(empty);
             return empty;
         }
     }
 
-    public static void saveCollection(String name, String[] paths) throws IOException {
-        String[] collections = loadCollections();
-        String[] newCollections = new String[collections.length + 1];
+    private static Pair<String, String>[] getExtendedCollectionsList() throws IOException {
+        Pair<String, String>[] collections = loadCollectionsList();
+        Pair<String,String>[] newCollections = new Pair[collections.length + 1];
 
-        for (int i = 0; i < collections.length; i++) {
-            newCollections[i] = collections[i];
-        }
-
-        newCollections[collections.length] = name;
-
-        saveCollections(newCollections);
-
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("name", name);
-        JSONArray jsonArray = new JSONArray();
-        for (String s : paths) {
-            jsonArray.put(s);
-        }
-        jsonObject.put("paths", jsonArray);
-
-        File dir = new File("data");
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-
-        File file = new File(String.format("data/%s_collection.json", name));
-        if (!file.exists()) {
-            file.createNewFile();
-        }
-
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-        writer.write(jsonObject.toString(4));
-        writer.close();
+        System.arraycopy(collections, 0, newCollections, 0, collections.length);
+        return newCollections;
     }
 
-    public static Collection loadCollection(String name) {
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(String.format("data/%s_collection.json", name)));
-            StringBuilder jsonContent = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                jsonContent.append(line);
-            }
-            JSONObject jsonObject = new JSONObject(jsonContent.toString());
-            JSONArray jsonArray = jsonObject.getJSONArray("paths");
-            String[] imagePaths = new String[jsonArray.length()];
-            for (int i = 0; i < jsonArray.length(); i++) {
-                imagePaths[i] = jsonArray.getString(i);
-            }
-            return new Collection(name, imagePaths);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    private static void saveCollection(Collection collection) throws IOException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("name", collection.getName());
+        jsonObject.put("paths", collection.getJSONPaths());
+
+        JSONHelper.writeJSONData(String.format("%s_collection", collection.getName()), jsonObject);
+    }
+
+    public static void saveOneWayCollection(Collection collection) throws IOException {
+        Pair<String, String>[] newCollections = getExtendedCollectionsList();
+        newCollections[newCollections.length - 1] = new Pair<>(collection.getName(), "one-way");
+        saveCollectionsList(newCollections);
+        saveCollection(collection);
+    }
+
+    public static void saveTwoWayCollection(Collection collection) throws IOException {
+        Pair<String, String>[] newCollections = getExtendedCollectionsList();
+        newCollections[newCollections.length - 1] = new Pair<>(collection.getName(), "two-way");
+        saveCollectionsList(newCollections);
+        saveCollection(collection);
+    }
+
+    public static OneWayCollection loadOneWayCollection(String name) throws IOException {
+        JSONObject jsonObject = JSONHelper.getJSONData(String.format("%s_collection", name));
+        JSONArray jsonArray = jsonObject.getJSONArray("paths");
+        String[] imagePaths = new String[jsonArray.length()];
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONArray curPath = jsonArray.getJSONArray(i);
+            imagePaths[i] = curPath.getString(0);
         }
+        return new OneWayCollection(name, imagePaths);
+    }
+
+    public static TwoWayCollection loadTwoWayCollection(String name) throws IOException {
+        JSONObject jsonObject = JSONHelper.getJSONData(String.format("%s_collection", name));
+        JSONArray jsonArray = jsonObject.getJSONArray("paths");
+        Pair<String, String>[] imagePaths = new Pair[jsonArray.length()];
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONArray curPath = jsonArray.getJSONArray(i);
+            imagePaths[i] = new Pair<>(curPath.getString(0), curPath.getString(1));
+        }
+        return new TwoWayCollection(name, imagePaths);
     }
 }
