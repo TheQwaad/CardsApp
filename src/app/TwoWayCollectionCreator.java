@@ -14,6 +14,11 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 class SelectButtonListener implements ActionListener {
     final FileFilter imageFilter = new FileNameExtensionFilter("Картинки", ImageIO.getReaderFileSuffixes());
@@ -23,13 +28,13 @@ class SelectButtonListener implements ActionListener {
         this.frame = frame;
     }
     public void actionPerformed(ActionEvent e) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.addChoosableFileFilter(imageFilter);
-        chooser.setMultiSelectionEnabled(true);
-        int returnVal = chooser.showDialog(null, "Выбрать файлы");
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.addChoosableFileFilter(imageFilter);
+        fileChooser.setMultiSelectionEnabled(true);
+        int returnVal = fileChooser.showDialog(null, "Выбрать файлы");
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File[] selectedFiles = chooser.getSelectedFiles();
+            File[] selectedFiles = fileChooser.getSelectedFiles();
             for (File f : selectedFiles) {
                 frame.addFile(f.getAbsolutePath());
             }
@@ -109,6 +114,33 @@ public class TwoWayCollectionCreator extends AbstractCollectionCreator {
 
 
     public List<String> getFiles() {
+        updateFilesIfInt();
         return files;
+    }
+
+    private void updateFilesIfInt() {
+        Pattern pattern = Pattern.compile(".*\\D(\\d+)\\.[^\\.]+$");
+
+        boolean allMatch = files.stream().allMatch(file -> {
+            Matcher matcher = pattern.matcher(file);
+            return matcher.matches();
+        });
+
+        if (allMatch) {
+            Collections.sort(files, new Comparator<String>() {
+                @Override
+                public int compare(String file1, String file2) {
+                    Matcher matcher1 = pattern.matcher(file1);
+                    Matcher matcher2 = pattern.matcher(file2);
+
+                    if (matcher1.find() && matcher2.find()) {
+                        int num1 = Integer.parseInt(matcher1.group(1));
+                        int num2 = Integer.parseInt(matcher2.group(1));
+                        return Integer.compare(num1, num2);
+                    }
+                    return 0;
+                }
+            });
+        }
     }
 }

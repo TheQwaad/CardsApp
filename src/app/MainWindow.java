@@ -152,12 +152,14 @@ public class MainWindow extends JFrame {
                 mouseListener = null;
             }
         } else {
+            if (mouseListener != null) {
+                imagePanel.removeMouseListener(mouseListener);
+            }
             mouseListener = new MouseAdapter() {
-                Pair<String, String> paths = (Pair<String, String>) content;
+                final Pair<String, String> paths = (Pair<String, String>) content;
                 String currentPath = paths.first();
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    System.out.println("Mouse clicked!");
                     if (Objects.equals(currentPath, paths.first())) {
                         currentPath = paths.second();
                     } else {
