@@ -5,6 +5,7 @@ import helpers.ImageHelper;
 import helpers.Pair;
 
 import javax.imageio.ImageIO;
+import javax.imageio.IIOException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -177,7 +178,10 @@ public class MainWindow extends JFrame {
 
     public MainWindow() throws IOException {
         super("Генератор карточек");
-        setIconImage(ImageIO.read(new File("assets/icon.jpg")));
+        try {
+            setIconImage(ImageIO.read(new File("assets/icon.jpg")));
+        } catch (IIOException ignored) {
+        }
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(true);
         this.setUndecorated(false);
